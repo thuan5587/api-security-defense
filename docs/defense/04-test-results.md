@@ -1,4 +1,4 @@
-# 04 – BÁO CÁO KẾT QUẢ KIỂM THỬ PHÒNG CHỐNG BOLA
+﻿# 04 – BÁO CÁO KẾT QUẢ KIỂM THỬ PHÒNG CHỐNG BOLA
 
 ## 1. Mục tiêu kiểm thử
 
@@ -184,6 +184,25 @@ Lệnh thực hiện trong thư mục backend identity:
 ```
 
 Kết quả: Quá trình chạy Unit Test hoàn thành thành công trong môi trường sử dụng JDK 17.
+
+### Kết quả kiểm thử tự động
+
+| Chỉ số | Kết quả |
+|---|---|
+| Test Suite | VehicleServiceImplTest |
+| Tổng số Unit Test | 16 |
+| Passed | 16 |
+| Failed | 0 |
+| Errors | 0 |
+| Skipped | 0 |
+| Tỷ lệ thành công | 100% |
+| Trạng thái Gradle | BUILD SUCCESSFUL |
+
+Báo cáo XML được lưu tại:
+
+`evidence/bola/BOLA-Unit-Test-Results.xml`
+
+Các Unit Test liên quan trực tiếp đến BOLA bao gồm kiểm tra truy cập hợp lệ, phương tiện không tồn tại, phương tiện không có chủ sở hữu và từ chối truy cập khi người dùng không phải chủ sở hữu.
 
 Đánh giá: **PASS** đối với bộ kiểm thử đã chạy.
 
