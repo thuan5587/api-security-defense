@@ -1,0 +1,103 @@
+﻿{
+    "item":  [
+                 {
+                     "name":  "02 - BOLA",
+                     "item":  [
+                                  {
+                                      "name":  "Get Alice Vehicles",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/vehicles",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "vehicles"
+                                                                           ]
+                                                              },
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_alice}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Bob Vehicles",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/vehicles",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "vehicles"
+                                                                           ]
+                                                              },
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_bob}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "BOLA-02 - Alice Access Bob Vehicle",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/b6ab7600-594f-4104-9ce8-d370a46e8ecc/location",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "b6ab7600-594f-4104-9ce8-d370a46e8ecc",
+                                                                               "location"
+                                                                           ]
+                                                              },
+                                                      "description":  "Expected after BOLA patch: HTTP 404 when Alice accesses Bob\u0027s vehicle location.",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_alice}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 }
+             ],
+    "info":  {
+                 "description":  "BOLA defense testing for OWASP crAPI. Sanitized collection without real JWT tokens.",
+                 "name":  "API-Security-Lab-BOLA",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             }
+}
