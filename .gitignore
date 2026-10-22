@@ -32,3 +32,5 @@ Thumbs.db
 /backend/identity/src/main/resources/application.properties
 
 /backend/identity/src/main/resources/certs/keystore.sh
+
+/evidence/bola/

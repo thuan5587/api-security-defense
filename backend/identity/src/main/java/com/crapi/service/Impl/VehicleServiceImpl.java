@@ -193,13 +193,19 @@ public VehicleLocationResponse getVehicleLocation(
         }
 
         // 3. Kiểm tra người đăng nhập có phải chủ xe không
-        if (!java.util.Objects.equals(
-                currentUser.getId(),
-                vehicleDetails.getOwner().getId())) {
+      if (!java.util.Objects.equals(
+        currentUser.getId(),
+        vehicleDetails.getOwner().getId())) {
 
-            log.warn("BOLA_ACCESS_DENIED: unauthorized vehicle access");
-            return null;
-        }
+    log.warn(
+        "BOLA_ACCESS_DENIED event=OBJECT_OWNERSHIP_DENIED method={} resourceId={} principalId={} reason=NOT_OWNER",
+        request.getMethod(),
+        carId,
+        currentUser.getId()
+    );
+
+    return null;
+}
 
         // 4. Chỉ chủ sở hữu mới được xem thông tin xe
         UserDetails userDetails =
