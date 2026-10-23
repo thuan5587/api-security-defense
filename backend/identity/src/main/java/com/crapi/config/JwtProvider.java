@@ -126,85 +126,62 @@ public class JwtProvider {
     return JWTParser.parse(token).getJWTClaimsSet().getSubject();
   }
 
-  // Load RSA Public Key for JKU header if present
-  private RSAKey getKeyFromJkuHeader(JWSHeader header) {
-    try {
-      URI jku = header.getJWKURL();
-      if (jku != null) {
-        URLConnection connection = jku.toURL().openConnection();
-        JWKSet jwkSet = JWKSet.load(connection.getInputStream());
-        connection.getInputStream().close();
-        log.info("JWKSet from URL : " + jwkSet.toString(false));
-        JWK key = jwkSet.getKeyByKeyId(header.getKeyID());
-        if (key != null && Objects.equals(key.getAlgorithm().getName(), "RS256")) {
-          return key.toRSAKey().toPublicJWK();
-        }
-      }
-    } catch (IOException | ParseException e) {
-      return null;
-    }
-
-    return null;
-  }
-
-  // Construct secret for JWT Verification through HS256 (vulnerability)
-  private String getJwtSecret(JWSHeader header) throws JOSEException {
-    // defaultSecret is RSA Public Key as String
-    // Algorithm Confusion Attack
-    Base64.Encoder encoder = Base64.getEncoder();
-    String defaultSecret = encoder.encodeToString(this.publicRSAKey.toPublicKey().getEncoded());
-
-    // Check if KID header is pointing to /dev/null file
-    String kid = header.getKeyID();
-    if (kid != null && kid.contains("/dev/null")) {
-      return "AA==";
-    }
-
-    return defaultSecret;
-  }
-
   /**
    * @param authToken
    * @return validate token expire and true boolean
    */
-  public boolean validateJwtToken(String authToken) {
+
+public boolean validateJwtToken(String authToken) {
     try {
-      SignedJWT signedJWT = SignedJWT.parse(authToken);
-      JWSHeader header = signedJWT.getHeader();
-      Algorithm alg = header.getAlgorithm();
-      boolean valid = false;
-      // JWT Algorithm confusion vulnerability
-      log.debug("Algorithm: " + alg.getName());
-      JWSVerifier verifier;
-      if (Objects.equals(alg.getName(), "HS256")) {
-        String secret = getJwtSecret(header);
-        log.debug("JWT Secret: " + secret);
-        verifier = new MACVerifier(secret.getBytes(StandardCharsets.UTF_8));
-      } else {
-        RSAKey verificationKey = getKeyFromJkuHeader(header);
-        if (verificationKey == null) {
-          log.debug("Key from JWKS: " + this.publicRSAKey.toJSONString());
-          verifier = new RSASSAVerifier(this.publicRSAKey);
-        } else {
-          log.debug("Key from JKU: " + verificationKey.toJSONString());
-          verifier = new RSASSAVerifier(verificationKey);
+        // 1. Parse JWT
+        SignedJWT signedJWT = SignedJWT.parse(authToken);
+        JWSHeader header = signedJWT.getHeader();
+
+        // 2. Chi chap nhan thuat toan RS256
+        if (!JWSAlgorithm.RS256.equals(header.getAlgorithm())) {
+            log.warn("Rejected JWT: unsupported signing algorithm");
+            return false;
         }
-      }
-      valid = signedJWT.verify(verifier);
-      log.debug("JWT valid?: " + valid);
-      return valid;
+
+        // 3. Xac thuc chu ky bang public key tin cay
+        JWSVerifier verifier = new RSASSAVerifier(this.publicRSAKey);
+
+        if (!signedJWT.verify(verifier)) {
+            log.warn("Rejected JWT: invalid signature");
+            return false;
+        }
+
+        // 4. Kiem tra thoi gian het han
+        Date now = new Date();
+        Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        if (expiration != null && !now.before(expiration)) {
+            log.warn("Rejected JWT: token expired");
+            return false;
+        }
+
+        // 5. Kiem tra thoi diem token co hieu luc (neu co)
+        Date notBefore = signedJWT.getJWTClaimsSet().getNotBeforeTime();
+
+        if (notBefore != null && now.before(notBefore)) {
+            log.warn("Rejected JWT: token not yet valid");
+            return false;
+        }
+
+        log.debug("JWT validated successfully");
+        return true;
 
     } catch (ParseException e) {
-      try {
-        PlainJWT jwt = PlainJWT.parse(authToken);
-        return true;
-      } catch (ParseException parseException) {
-        log.error("Could not parse JWT Token -> Message: %d", parseException);
-      }
-    } catch (JOSEException e) {
-      log.error("RSA JWK Extraction failed -> Message: %d", e);
-    }
+        log.warn("Rejected JWT: invalid token format or claims");
+        return false;
 
-    return false;
-  }
+    } catch (JOSEException e) {
+        log.error("JWT signature verification failed", e);
+        return false;
+
+    } catch (IllegalArgumentException e) {
+        log.warn("Rejected JWT: invalid token");
+        return false;
+    }
+}
 }

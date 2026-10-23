@@ -350,7 +350,7 @@ public class UserServiceImplTest {
     User user = getDummyUser();
     UserDetails userDetails = getDummyUserDetails();
     ProfileVideo profileVideo = getDummyProfileVideo();
-    Mockito.doReturn(user).when(userService).getUserFromTokenWithoutValidation(Mockito.any());
+   Mockito.doReturn(user).when(userService).getUserFromToken(Mockito.any());
     userDetailsRepository.findByUser_id(user.getId());
     Mockito.when(userDetailsRepository.findByUser_id(Mockito.anyLong())).thenReturn(userDetails);
     Mockito.when(profileVideoRepository.findByUser_id(Mockito.anyLong()))
@@ -366,7 +366,7 @@ public class UserServiceImplTest {
   public void getUserByRequestTokenRequestSuccessFullWhenUserDetailsNull() {
     User user = getDummyUser();
     ProfileVideo profileVideo = getDummyProfileVideo();
-    Mockito.doReturn(user).when(userService).getUserFromTokenWithoutValidation(Mockito.any());
+    Mockito.doReturn(user).when(userService).getUserFromToken(Mockito.any());
     userDetailsRepository.findByUser_id(user.getId());
     Mockito.when(userDetailsRepository.findByUser_id(Mockito.anyLong())).thenReturn(null);
     Mockito.when(profileVideoRepository.findByUser_id(Mockito.anyLong()))
@@ -383,7 +383,7 @@ public class UserServiceImplTest {
   public void getUserByRequestTokenRequestSuccessFullWhenProfileVideoNull() {
     User user = getDummyUser();
     UserDetails userDetails = getDummyUserDetails();
-    Mockito.doReturn(user).when(userService).getUserFromTokenWithoutValidation(Mockito.any());
+    Mockito.doReturn(user).when(userService).getUserFromToken(Mockito.any());
     userDetailsRepository.findByUser_id(user.getId());
     Mockito.when(userDetailsRepository.findByUser_id(Mockito.anyLong())).thenReturn(userDetails);
     Mockito.when(profileVideoRepository.findByUser_id(Mockito.anyLong())).thenReturn(null);
@@ -393,7 +393,25 @@ public class UserServiceImplTest {
     Assertions.assertNull(dashboardResponse.getVideo_url());
     Assertions.assertNull(dashboardResponse.getVideo_name());
   }
+@Test
+public void getUserByRequestTokenShouldRejectInvalidJwt() throws Exception {
+    // Gia lap bo loc tu choi JWT khong hop le
+    Mockito.when(jwtAuthTokenFilter.getUserFromToken(Mockito.any()))
+        .thenReturn("INVALID");
 
+    DashboardResponse response =
+        userService.getUserByRequestToken(getMockHttpRequest());
+
+    Assertions.assertNull(response);
+
+    Mockito.verify(userRepository, Mockito.never())
+        .findByEmail(Mockito.anyString());
+
+    Mockito.verifyNoInteractions(
+        userDetailsRepository,
+        profileVideoRepository
+    );
+}
   @Test
   public void changeEmailRequestNewEmailAlreadyExists() {
     ChangeEmailForm changeEmailForm = getDummyChangeEmailForm();

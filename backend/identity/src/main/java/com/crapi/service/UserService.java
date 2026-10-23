@@ -43,7 +43,7 @@ public interface UserService {
 
   User getUserFromToken(HttpServletRequest request);
 
-  User getUserFromTokenWithoutValidation(HttpServletRequest request);
+  
 
   CRAPIResponse loginWithEmailToken(LoginWithEmailToken loginWithEmailToken);
 
