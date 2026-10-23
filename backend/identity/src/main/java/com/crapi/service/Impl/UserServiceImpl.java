@@ -242,7 +242,9 @@ public class UserServiceImpl implements UserService {
     try {
       // Invalid Signature vulnerability
       // Not Checking the validity of the token for this request
-      user = getUserFromTokenWithoutValidation(request);
+      // D1 - JWT Validation Defense
+// Validate JWT signature before accessing dashboard data.
+user = getUserFromToken(request);
       userDetails = userDetailsRepository.findByUser_id(user.getId());
       profileVideo = profileVideoRepository.findByUser_id(user.getId());
       dashboardResponse =
@@ -373,27 +375,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
-  @Transactional
-  @Override
-  public User getUserFromTokenWithoutValidation(HttpServletRequest request) {
-    User user = null;
-    try {
-      String jwt = jwtAuthTokenFilter.getToken(request);
-      String username = jwtProvider.getUserNameFromJwtToken(jwt);
-      if (username != null && !username.equalsIgnoreCase(EStatus.INVALID.toString())) {
-        user = userRepository.findByEmail(username);
-      }
-
-      if (user != null) {
-        return user;
-      } else {
-        throw new EntityNotFoundException(User.class, "userEmail", username);
-      }
-    } catch (ParseException exception) {
-      log.error("fail to get username from token -> Message:%d", exception);
-      throw new EntityNotFoundException(User.class, "userEmail");
-    }
-  }
+  
 
   /**
    * @param loginWithEmailToken contains user email and email change token, which allow user login

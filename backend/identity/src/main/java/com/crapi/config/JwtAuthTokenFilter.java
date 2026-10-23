@@ -203,23 +203,33 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
    * @return return username from HttpServletRequest if request have token we are returning username
    *     from request token
    */
-  public String getUserFromToken(HttpServletRequest request) throws ParseException {
+  
+public String getUserFromToken(HttpServletRequest request) throws ParseException {
     ApiType apiType = getKeyType(request);
     String token = getToken(request);
-    String username = null;
-    if (token != null) {
-      if (apiType == ApiType.APIKEY) {
-        log.debug("Token is api token");
-        username = tokenProvider.getUserNameFromJwtToken(token);
-      } else {
-        log.debug("Token is jwt token");
-        if (tokenProvider.validateJwtToken(token)) {
-          username = tokenProvider.getUserNameFromJwtToken(token);
-        }
-      }
-      // checking username from token
-      if (username != null) return username;
+
+    if (token == null || token.isBlank()) {
+        return EStatus.INVALID.toString();
     }
-    return EStatus.INVALID.toString();
-  }
+
+    // Both JWT and API Key must have a valid RS256 signature.
+    if (!tokenProvider.validateJwtToken(token)) {
+        log.warn("Rejected invalid JWT or API Key");
+        return EStatus.INVALID.toString();
+    }
+
+    if (apiType == ApiType.APIKEY) {
+        log.debug("Validated API Key");
+    } else {
+        log.debug("Validated JWT");
+    }
+
+    String username = tokenProvider.getUserNameFromJwtToken(token);
+
+    if (username == null || username.isBlank()) {
+        return EStatus.INVALID.toString();
+    }
+
+    return username;
+}
 }
