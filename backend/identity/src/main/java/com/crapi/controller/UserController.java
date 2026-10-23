@@ -43,11 +43,15 @@ public class UserController {
   @GetMapping("/dashboard")
   public ResponseEntity<?> dashboard(HttpServletRequest request) {
     DashboardResponse userData = userService.getUserByRequestToken(request);
+
     if (userData != null) {
       return ResponseEntity.status(HttpStatus.OK).body(userData);
-    } else
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(new CRAPIResponse(UserMessage.EMAIL_NOT_REGISTERED, 404));
+    }
+
+    // D1 - JWT Validation Defense
+    // Reject requests without a valid authenticated user.
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(new CRAPIResponse("Unauthorized: Invalid or missing token", 401));
   }
 
   /**
