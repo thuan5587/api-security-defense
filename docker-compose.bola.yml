@@ -1,0 +1,3 @@
+﻿services:
+  crapi-identity:
+    image: crapi-identity-bola-defense:v2
