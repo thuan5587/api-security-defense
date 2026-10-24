@@ -111,43 +111,36 @@ public class AuthController {
   @PostMapping("/forget-password")
   public ResponseEntity<CRAPIResponse> forgetPassword(
       @Valid @RequestBody ForgetPassword forgetPassword) {
-    CRAPIResponse forgetPasswordResponse = otpService.generateOtp(forgetPassword);
-    if (forgetPasswordResponse != null && forgetPasswordResponse.getStatus() == 200) {
-      return ResponseEntity.status(HttpStatus.OK).body(forgetPasswordResponse);
-    }
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(forgetPasswordResponse);
+    CRAPIResponse response = otpService.generateOtp(forgetPassword);
+    return otpResponse(response);
   }
 
-  /**
-   * @param otpForm contains otp, updated password and user email
-   * @return success and failure response its non secure API for attacker. in this attacker can
-   *     enter 'n' number of times invalid otp
-   */
   @PostMapping("/v2/check-otp")
   public ResponseEntity<CRAPIResponse> checkOtp(@RequestBody OtpForm otpForm) {
-    CRAPIResponse validateOtpResponse = otpService.validateOtp(otpForm);
-    if (validateOtpResponse != null && validateOtpResponse.getStatus() == 200) {
-      return ResponseEntity.status(HttpStatus.OK).body(validateOtpResponse);
-    } else {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(validateOtpResponse);
-    }
+    CRAPIResponse response = otpService.validateOtp(otpForm);
+    return otpResponse(response);
   }
 
-  /**
-   * @param otpForm contains otp, updated password and user email
-   * @return success and failure response its secure otp validator in this user can enter 10 times
-   *     invalid otp after 10 invalid otp it will invalidate the otp.
-   */
   @PostMapping("/v3/check-otp")
   public ResponseEntity<CRAPIResponse> secureCheckOtp(@RequestBody OtpForm otpForm) {
-    CRAPIResponse validateOtpResponse = otpService.secureValidateOtp(otpForm);
-    if (validateOtpResponse.getStatus() == 200) {
-      return ResponseEntity.status(HttpStatus.OK).body(validateOtpResponse);
-    } else if (validateOtpResponse.getStatus() == 503) {
-      return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(validateOtpResponse);
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(validateOtpResponse);
+    CRAPIResponse response = otpService.secureValidateOtp(otpForm);
+    return otpResponse(response);
   }
+
+  private ResponseEntity<CRAPIResponse> otpResponse(CRAPIResponse response) {
+    if (response == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    int status = response.getStatus();
+
+    if (status == 200 || status == 401 || status == 404 || status == 429) {
+      return ResponseEntity.status(status).body(response);
+    }
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+  }
+
 
   /**
    * @param loginWithEmailToken contains user email and email change token, which allow user login

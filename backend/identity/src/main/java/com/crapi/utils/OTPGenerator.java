@@ -14,10 +14,12 @@
 
 package com.crapi.utils;
 
+import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OTPGenerator {
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public static String num = "0123456789";
 
@@ -36,7 +38,7 @@ public class OTPGenerator {
 
   public static String randomNumber(String characters) {
     int n = num.length();
-    int r = (int) (n * Math.random());
+    int r = SECURE_RANDOM.nextInt(n);
     return num.substring(r, r + 1);
   }
 }

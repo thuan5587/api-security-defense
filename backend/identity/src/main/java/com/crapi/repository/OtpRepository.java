@@ -14,14 +14,24 @@
 
 package com.crapi.repository;
 
+
 import com.crapi.entity.Otp;
 import com.crapi.entity.User;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OtpRepository extends JpaRepository<Otp, Long> {
-  Otp findByOtpAndStatus(String otp, String status);
 
-  Otp findByUser(User user);
+    Otp findByOtpAndStatus(String otp, String status);
+
+    Otp findByUser(User user);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT o FROM Otp o WHERE o.user = :user")
+    Otp findByUserForUpdate(@Param("user") User user);
 }
