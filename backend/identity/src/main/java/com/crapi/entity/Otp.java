@@ -16,7 +16,7 @@ package com.crapi.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.time.LocalDateTime;
 @Entity
 @Table(name = "otp")
 @Data
@@ -27,10 +27,16 @@ public class Otp {
   private long id;
 
   private String otp;
-  private String status;
-  private int count;
+private String status;
+private int count;
 
-  @OneToOne private User user;
+private LocalDateTime expiresAt;
+private LocalDateTime lockedUntil;
+private LocalDateTime lastFailedAt;
+private LocalDateTime attemptWindowStartedAt;
+
+@OneToOne
+private User user;
 
   public Otp() {}
 

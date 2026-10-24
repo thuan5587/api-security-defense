@@ -77,10 +77,14 @@ public class OtpServiceImplTest {
     Assertions.assertFalse(otpService.validateOTPAndEmail(otp, otpForm));
   }
 
-  @Test(expected = EntityNotFoundException.class)
+  @Test
   public void validateOtpThrowsExceptionWhenUserNotFound() {
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(null);
-    otpService.validateOtp(getDummyOtpForm());
+
+    CRAPIResponse response = otpService.validateOtp(getDummyOtpForm());
+
+    Assertions.assertEquals(401, response.getStatus());
+    Assertions.assertEquals("Invalid OTP or email.", response.getMessage());
   }
 
   @Test
@@ -93,7 +97,7 @@ public class OtpServiceImplTest {
     otp.getUser().setEmail(otpForm.getEmail());
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
     Mockito.when(encoder.encode(Mockito.anyString())).thenReturn("DUMMY ENCODE");
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
     CRAPIResponse crapiAPIResponse = otpService.validateOtp(otpForm);
     Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any());
     Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
@@ -107,12 +111,12 @@ public class OtpServiceImplTest {
     User user = getDummyUser();
     OtpForm otpForm = getDummyOtpForm();
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
     CRAPIResponse crapiAPIResponse = otpService.validateOtp(otpForm);
     Mockito.verify(userRepository, Mockito.times(0)).save(Mockito.any());
     Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
-    Assertions.assertEquals(UserMessage.INVALID_OTP, crapiAPIResponse.getMessage());
-    Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), crapiAPIResponse.getStatus());
+    Assertions.assertEquals("Invalid OTP.", crapiAPIResponse.getMessage());
+    Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), crapiAPIResponse.getStatus());
   }
 
   @Test
@@ -124,7 +128,7 @@ public class OtpServiceImplTest {
     otp.setStatus(EStatus.ACTIVE.toString());
     otp.getUser().setEmail(otpForm.getEmail());
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
     CRAPIResponse crapiAPIResponse = otpService.secureValidateOtp(otpForm);
     Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any());
     Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
@@ -133,55 +137,71 @@ public class OtpServiceImplTest {
   }
 
   @Test
-  public void secureValidateOtpFailsWithInvalidOtpWhenOtpCountIs9() {
+  public void secureValidateOtpLocksAfterFifthInvalidAttempt() {
     Otp otp = getDummyOtp();
     User user = getDummyUser();
     OtpForm otpForm = getDummyOtpForm();
-    otp.setCount(9);
+
+    otp.setCount(4);
+    otp.setAttemptWindowStartedAt(java.time.LocalDateTime.now());
+
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
-    CRAPIResponse crapiAPIResponse = otpService.secureValidateOtp(otpForm);
-    Mockito.verify(userRepository, Mockito.times(0)).save(Mockito.any());
-    Mockito.verify(otpRepository, Mockito.times(2)).save(Mockito.any());
-    Assertions.assertEquals(UserMessage.EXCEED_NUMBER_OF_ATTEMPS, crapiAPIResponse.getMessage());
-    Assertions.assertEquals(503, crapiAPIResponse.getStatus());
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
+
+    CRAPIResponse response = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(429, response.getStatus());
+    Assertions.assertEquals(5, otp.getCount());
+    Assertions.assertEquals(EStatus.INACTIVE.toString(), otp.getStatus());
+    Assertions.assertNotNull(otp.getLockedUntil());
+    Assertions.assertTrue(otp.getLockedUntil().isAfter(java.time.LocalDateTime.now()));
+
+    Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
+    Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
   }
 
   @Test
-  public void secureValidateOtpFailsWithInvalidOtpWhenOtpCountIsGreaterThan9() {
+  public void secureValidateOtpRejectsWhenAttemptLimitAlreadyReached() {
     Otp otp = getDummyOtp();
     User user = getDummyUser();
     OtpForm otpForm = getDummyOtpForm();
-    otp.setCount(10);
-    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
-    CRAPIResponse crapiAPIResponse = otpService.secureValidateOtp(otpForm);
-    Mockito.verify(userRepository, Mockito.times(0)).save(Mockito.any());
-    Mockito.verify(otpRepository, Mockito.times(2)).save(Mockito.any());
-    Assertions.assertEquals(UserMessage.ERROR, crapiAPIResponse.getMessage());
-    Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), crapiAPIResponse.getStatus());
-  }
 
+    otp.setCount(5);
+    otp.setAttemptWindowStartedAt(java.time.LocalDateTime.now());
+
+    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
+
+    CRAPIResponse response = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(429, response.getStatus());
+    Assertions.assertEquals(EStatus.INACTIVE.toString(), otp.getStatus());
+
+    Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
+    Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
+  }
   @Test
   public void secureValidateOtpFailsWithDefaultCondition() {
     Otp otp = getDummyOtp();
     User user = getDummyUser();
     OtpForm otpForm = getDummyOtpForm();
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(Mockito.any())).thenReturn(otp);
+    Mockito.when(otpRepository.findByUserForUpdate(Mockito.any())).thenReturn(otp);
     CRAPIResponse crapiAPIResponse = otpService.secureValidateOtp(otpForm);
     Mockito.verify(userRepository, Mockito.times(0)).save(Mockito.any());
     Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
-    Assertions.assertEquals(UserMessage.INVALID_OTP, crapiAPIResponse.getMessage());
-    Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), crapiAPIResponse.getStatus());
+    Assertions.assertEquals("Invalid OTP.", crapiAPIResponse.getMessage());
+    Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), crapiAPIResponse.getStatus());
   }
 
-  @Test(expected = EntityNotFoundException.class)
+  @Test
   public void secureValidateOtpThrowsExceptionWhenUserNotFound() {
-    Otp otp = getDummyOtp();
-    OtpForm otpForm = getDummyOtpForm();
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(null);
-    otpService.secureValidateOtp(otpForm);
+
+    CRAPIResponse response = otpService.secureValidateOtp(getDummyOtpForm());
+
+    Assertions.assertEquals(401, response.getStatus());
+    Assertions.assertEquals("Invalid OTP or email.", response.getMessage());
   }
 
   @Test
@@ -195,13 +215,34 @@ public class OtpServiceImplTest {
   }
 
   @Test
-  public void generateOtpSuccessWhenOtpEntryAlreadyPresent() {
-    ForgetPassword forgetPassword = getDummyForgetPassword();
+  public void generateOtpRejectsWhenActiveOtpAlreadyExists() {
     User user = getDummyUser();
     Otp otp = getDummyOtp();
+    String originalCode = otp.getOtp();
+
+    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(otp);
+
+    CRAPIResponse response = otpService.generateOtp(getDummyForgetPassword());
+
+    Assertions.assertEquals(429, response.getStatus());
+    Assertions.assertEquals(
+        "An OTP has already been issued. Please wait until it expires.",
+        response.getMessage());
+    Assertions.assertEquals(originalCode, otp.getOtp());
+
+    Mockito.verify(otpRepository, Mockito.never()).save(Mockito.any());
+    Mockito.verify(smtpMailServer, Mockito.never())
+        .sendMail(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+  }
+
+  @Test
+  public void generateOtpSuccessWhenOtpNotPresentAlreadyPresent() {
+    ForgetPassword forgetPassword = getDummyForgetPassword();
+    User user = getDummyUser();
     String expectedMessage = UserMessage.OTP_SEND_SUCCESS_ON_EMAIL + user.getEmail();
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(user)).thenReturn(otp);
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(null);
     Mockito.doNothing()
         .when(smtpMailServer)
         .sendMail(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
@@ -212,19 +253,105 @@ public class OtpServiceImplTest {
   }
 
   @Test
-  public void generateOtpSuccessWhenOtpNotPresentAlreadyPresent() {
-    ForgetPassword forgetPassword = getDummyForgetPassword();
+  public void secureValidateOtpRejectsExpiredOtp() {
+    Otp otp = getDummyOtp();
     User user = getDummyUser();
-    String expectedMessage = UserMessage.OTP_SEND_SUCCESS_ON_EMAIL + user.getEmail();
+    OtpForm otpForm = getDummyOtpForm();
+
+    otp.setExpiresAt(java.time.LocalDateTime.now().minusMinutes(1));
+    otpForm.setOtp(otp.getOtp());
+
     Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
-    Mockito.when(otpRepository.findByUser(user)).thenReturn(null);
-    Mockito.doNothing()
-        .when(smtpMailServer)
-        .sendMail(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-    CRAPIResponse crapiAPIResponse = otpService.generateOtp(getDummyForgetPassword());
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(otp);
+
+    CRAPIResponse response = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(401, response.getStatus());
+    Assertions.assertEquals("Invalid or expired OTP.", response.getMessage());
+
+    Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
+    Mockito.verify(otpRepository, Mockito.never()).save(Mockito.any());
+  }
+
+  @Test
+  public void secureValidateOtpRejectsDuringTenMinuteLock() {
+    Otp otp = getDummyOtp();
+    User user = getDummyUser();
+    OtpForm otpForm = getDummyOtpForm();
+
+    otp.setCount(5);
+    otp.setLockedUntil(java.time.LocalDateTime.now().plusMinutes(10));
+    otpForm.setOtp(otp.getOtp());
+
+    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(otp);
+
+    CRAPIResponse response = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(429, response.getStatus());
+    Assertions.assertEquals(
+        "Too many OTP attempts. Please try again later.",
+        response.getMessage());
+
+    Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
+    Mockito.verify(otpRepository, Mockito.never()).save(Mockito.any());
+  }
+
+  @Test
+  public void generateOtpSucceedsWhenPreviousOtpExpired() {
+    User user = getDummyUser();
+    Otp otp = getDummyOtp();
+
+    otp.setExpiresAt(java.time.LocalDateTime.now().minusMinutes(1));
+    otp.setCount(0);
+
+    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(otp);
+
+    CRAPIResponse response = otpService.generateOtp(getDummyForgetPassword());
+
+    Assertions.assertEquals(200, response.getStatus());
+    Assertions.assertEquals(
+        UserMessage.OTP_SEND_SUCCESS_ON_EMAIL + user.getEmail(),
+        response.getMessage());
+
+    Assertions.assertEquals(EStatus.ACTIVE.toString(), otp.getStatus());
+    Assertions.assertNotNull(otp.getExpiresAt());
+    Assertions.assertTrue(
+        otp.getExpiresAt().isAfter(java.time.LocalDateTime.now()));
+
+    Mockito.verify(otpRepository, Mockito.times(1)).save(otp);
+    Mockito.verify(smtpMailServer, Mockito.times(1))
+        .sendMail(
+            Mockito.eq(user.getEmail()),
+            Mockito.anyString(),
+            Mockito.eq("crAPI OTP"));
+  }
+
+  @Test
+  public void secureValidateOtpRejectsReuseAfterSuccess() {
+    Otp otp = getDummyOtp();
+    User user = getDummyUser();
+    OtpForm otpForm = getDummyOtpForm();
+
+    otpForm.setOtp(otp.getOtp());
+
+    Mockito.when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+    Mockito.when(otpRepository.findByUserForUpdate(user)).thenReturn(otp);
+    Mockito.when(encoder.encode(Mockito.anyString())).thenReturn("ENCODED_PASSWORD");
+
+    CRAPIResponse firstResponse = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(200, firstResponse.getStatus());
+    Assertions.assertEquals(EStatus.INACTIVE.toString(), otp.getStatus());
+
+    CRAPIResponse secondResponse = otpService.secureValidateOtp(otpForm);
+
+    Assertions.assertEquals(401, secondResponse.getStatus());
+    Assertions.assertEquals("Invalid or expired OTP.", secondResponse.getMessage());
+
+    Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any());
     Mockito.verify(otpRepository, Mockito.times(1)).save(Mockito.any());
-    Assertions.assertEquals(expectedMessage, crapiAPIResponse.getMessage());
-    Assertions.assertEquals(HttpStatus.OK.value(), crapiAPIResponse.getStatus());
   }
 
   private ForgetPassword getDummyForgetPassword() {
@@ -246,7 +373,8 @@ public class OtpServiceImplTest {
     otp.setCount(1);
     otp.setId(1l);
     otp.setOtp("123123");
-    otp.setStatus("DUMMY STATUS");
+    otp.setStatus(EStatus.ACTIVE.toString());
+    otp.setExpiresAt(java.time.LocalDateTime.now().plusMinutes(5));
     otp.setUser(getDummyUser());
     return otp;
   }
