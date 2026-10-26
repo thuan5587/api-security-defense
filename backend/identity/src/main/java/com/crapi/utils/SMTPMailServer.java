@@ -42,7 +42,7 @@ public class SMTPMailServer {
     Session session = mailhogConfiguration.sendmail();
     boolean useMailHog = false;
     try {
-      log.info("sendMail  mhogDomain: {}, emails: {}", mhogDomain, sendMail);
+      log.info("SMTP email delivery requested");
       InternetAddress[] emails = InternetAddress.parse(sendMail);
       if (mhogDomain != null && !mhogDomain.isEmpty()) {
         if (mailConfiguration.getHost().trim().endsWith(mhogDomain)) {
@@ -53,16 +53,16 @@ public class SMTPMailServer {
         for (InternetAddress emailAddress : emails) {
           String email = emailAddress.toString();
           String domain = email.substring(email.indexOf("@") + 1).trim();
-          log.debug("sendMail  mhogDomain: {}, email: {}, domain: {}", mhogDomain, email, domain);
+          log.debug("Checking SMTP routing configuration");
           if (mhogDomain.trim().equals(domain)) {
-            log.info("Using MailHog Configuration for sending email for domain: " + domain);
+            log.info("Using MailHog configuration for email delivery");
             useMailHog = true;
           }
         }
       }
       if (!useMailHog) {
         session = mailConfiguration.sendmail();
-        log.info("Using Mail Configuration for sending email: " + sendMail);
+        log.info("Using configured SMTP service for email delivery");
       }
 
       Message msg = new MimeMessage(session);
@@ -79,7 +79,7 @@ public class SMTPMailServer {
 
       Transport.send(msg);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("SMTP email delivery failed");
     }
   }
 }

@@ -1,0 +1,14 @@
+﻿Test: OTP Rate Limiting
+Endpoint: POST /identity/api/auth/v3/check-otp
+Attempt 1: HTTP 401
+Attempt 2: HTTP 401
+Attempt 3: HTTP 401
+Attempt 4: HTTP 401
+Attempt 5: HTTP 429
+Database Failed Attempts: 5
+Database OTP Status: INACTIVE
+Database Lock Recorded: True
+Database Currently Locked: True
+Expected: HTTP 429 on fifth invalid attempt
+Result: PASS
+Sensitive Data: REDACTED

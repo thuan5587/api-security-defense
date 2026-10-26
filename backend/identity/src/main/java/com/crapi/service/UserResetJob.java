@@ -42,7 +42,7 @@ public class UserResetJob {
         user.setPasswordUpdatedAt(DEFAULT_PASSWORD_DATE);
         userRepository.saveAndFlush(user);
         resetCount++;
-        logger.info("Reset password for test user: {}", seedUser.getEmail());
+        logger.info("Test user credentials reset successfully");
       }
     }
 

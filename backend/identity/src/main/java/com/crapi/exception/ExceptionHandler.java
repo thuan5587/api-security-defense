@@ -41,7 +41,8 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
 
   @org.springframework.web.bind.annotation.ExceptionHandler({RuntimeException.class})
   public ResponseEntity<String> handleRunTimeException(RuntimeException e) {
-    return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(e.getMessage());
+    log.error("Unhandled runtime exception");
+    return ResponseEntity.status(INTERNAL_SERVER_ERROR).body("Internal server error");
   }
 
   @org.springframework.web.bind.annotation.ExceptionHandler({CRAPIExceptionHandler.class})
@@ -52,8 +53,7 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
 
   @org.springframework.web.bind.annotation.ExceptionHandler({LockedException.class})
   private ResponseEntity<Object> handleAccountLockException(LockedException e) {
-    // Print stack trace
-    e.printStackTrace();
+    log.warn("Account authentication locked");
     CRAPIResponse cr =
         new CRAPIResponse(UserMessage.ACCOUNT_LOCKED_MESSAGE, HttpStatus.LOCKED.value());
     return new ResponseEntity<Object>(cr, HttpStatus.LOCKED);
@@ -77,7 +77,7 @@ public class ExceptionHandler extends ResponseEntityExceptionHandler {
       HttpHeaders headers,
       HttpStatusCode status,
       WebRequest request) {
-    String bindingResult = ex.getBindingResult().toString();
+    String bindingResult = ex.getBindingResult().getFieldErrors().stream().map(error -> error.getField() + ": " + error.getDefaultMessage()).distinct().collect(java.util.stream.Collectors.joining("; "));
     ErrorDetails errorDetails = new ErrorDetails("Validation failed", bindingResult);
     return new ResponseEntity<Object>(errorDetails, HttpStatus.BAD_REQUEST);
   }

@@ -129,7 +129,7 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
       String email = credentials.substring(0, colonIndex);
       String password = credentials.substring(colonIndex + 1);
 
-      log.debug("Attempting Basic Auth for user: {}", email);
+      log.debug("Basic Auth authentication attempt");
 
       // Authenticate using AuthenticationManager
       Authentication authentication =
@@ -156,7 +156,7 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
       authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authToken);
 
-      log.debug("Basic Auth successful for user: {}", email);
+      log.debug("Basic Auth authentication successful");
 
     } catch (BadCredentialsException e) {
       log.error("Basic Auth failed - invalid credentials");
