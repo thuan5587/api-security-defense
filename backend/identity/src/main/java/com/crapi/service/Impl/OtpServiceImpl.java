@@ -63,7 +63,7 @@ private static final int OTP_LOCK_MINUTES = 10;
       Otp saveOtp = otpRepository.save(otp);
       return true;
     } catch (Exception e) {
-      log.error("Fail to invalidate otp -> Message: {}", e);
+      log.error("Failed to invalidate OTP");
       return false;
     }
   }

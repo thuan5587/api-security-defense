@@ -118,7 +118,7 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
       throw new EntityNotFoundException(
           VehicleDetails.class, UserMessage.ERROR, signUpRequest.getName());
     }
-    log.info("User registration failed {}", signUpRequest.getEmail());
+    log.info("User registration failed");
     return new CRAPIResponse(UserMessage.SIGN_UP_FAILED + signUpRequest.getEmail(), 400);
   }
 }

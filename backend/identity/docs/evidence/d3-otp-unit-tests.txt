@@ -1,0 +1,8 @@
+﻿Test Suite: com.crapi.service.Impl.OtpServiceImplTest
+Total Tests: 19
+Failures: 0
+Errors: 0
+Skipped: 0
+Time Seconds: 1.942
+Result: PASS
+Sensitive Data: REDACTED

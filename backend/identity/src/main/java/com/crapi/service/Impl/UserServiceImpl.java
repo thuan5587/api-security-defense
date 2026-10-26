@@ -264,7 +264,7 @@ user = getUserFromToken(request);
       }
       return dashboardResponse;
     } catch (Exception exception) {
-      log.error("fail to load user by email:  -> Message: %d", exception);
+      log.error("Failed to load user dashboard data");
       return null;
     }
   }
@@ -366,11 +366,11 @@ user = getUserFromToken(request);
       if (user != null) {
         return user;
       } else {
-        log.error("User not found with email: {}", username);
+        log.warn("User lookup failed during token authentication");
         throw new EntityNotFoundException(User.class, "userEmail", username);
       }
     } catch (ParseException exception) {
-      log.error("fail to get username from token -> Message:%d", exception);
+      log.warn("Unable to parse authentication token");
       throw new EntityNotFoundException(User.class, "userEmail", username);
     }
   }
@@ -490,7 +490,7 @@ user = getUserFromToken(request);
     if (authentication == null) {
       return new ApiKeyResponse(null, UserMessage.INVALID_CREDENTIALS);
     }
-    log.info("Generate Api Key for user: {}", loginForm.getEmail());
+    log.info("API key generation requested");
     User user;
     if (request == null || jwtAuthTokenFilter.getToken(request) == null) {
       user = userRepository.findByEmail(loginForm.getEmail());
@@ -503,11 +503,11 @@ user = getUserFromToken(request);
     }
     // if apiKey is already generated
     if (user.getApiKey() != null) {
-      log.debug("Api Key already generated for user: {}", user.getEmail());
+      log.debug("Existing API key returned");
       return new ApiKeyResponse(user.getApiKey());
     }
     String apiKey = jwtProvider.generateApiKey(user);
-    log.debug("Api Key for user {}: {}", user.getEmail(), apiKey);
+    log.debug("API key generation completed");
     if (apiKey == null) {
       return new ApiKeyResponse(null, UserMessage.API_KEY_GENERATION_FAILED);
     }

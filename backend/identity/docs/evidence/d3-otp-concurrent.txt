@@ -1,0 +1,10 @@
+﻿Test: Concurrent OTP Validation
+Endpoint: POST /identity/api/auth/v3/check-otp
+OTP Creation: HTTP 200
+Concurrent Request 1: HTTP 200
+Concurrent Request 2: HTTP 401
+Successful Validations: 1
+Rejected Validations: 1
+Expected: Only one request may successfully consume the OTP
+Result: PASS
+Sensitive Data: REDACTED

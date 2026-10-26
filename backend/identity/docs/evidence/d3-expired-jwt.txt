@@ -1,0 +1,6 @@
+﻿Test: Expired JWT
+Endpoint: GET /identity/api/v2/user/dashboard
+HTTP Status: 401
+Expected: 401
+Result: PASS
+Sensitive data: REDACTED

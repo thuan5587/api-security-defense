@@ -184,7 +184,7 @@ public class InitialDataConfig {
         vehicleDetails.setOwner(user);
         vehicleDetailsRepository.save(vehicleDetails);
       } else {
-        log.error("Fail to create vehicle for user {}", email);
+        log.error("Failed to create vehicle during initial data setup");
         return false;
       }
       // generate random bytes
@@ -197,7 +197,7 @@ public class InitialDataConfig {
       profileVideoRepository.save(profileVideo);
       return true;
     } catch (Exception e) {
-      log.error("Fail to create user {}, Exception :: {}", email, e);
+      log.error("Failed to create user during initial data setup");
       return false;
     }
   }

@@ -1,0 +1,6 @@
+﻿Test: Valid RS256 JWT
+Endpoint: GET /identity/api/v2/user/dashboard
+HTTP Status: 200
+Expected: 200
+Result: PASS
+Sensitive data: REDACTED
