@@ -139,7 +139,8 @@ public boolean validateJwtToken(String authToken) {
 
         // 2. Chi chap nhan thuat toan RS256
         if (!JWSAlgorithm.RS256.equals(header.getAlgorithm())) {
-            log.warn("Rejected JWT: unsupported signing algorithm");
+            org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+            log.warn("JWT_INVALID reasonCode=UNSUPPORTED_ALGORITHM statusCode=401");
             return false;
         }
 
@@ -147,7 +148,8 @@ public boolean validateJwtToken(String authToken) {
         JWSVerifier verifier = new RSASSAVerifier(this.publicRSAKey);
 
         if (!signedJWT.verify(verifier)) {
-            log.warn("Rejected JWT: invalid signature");
+            org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+            log.warn("JWT_INVALID reasonCode=INVALID_SIGNATURE statusCode=401");
             return false;
         }
 
@@ -156,7 +158,8 @@ public boolean validateJwtToken(String authToken) {
         Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         if (expiration != null && !now.before(expiration)) {
-            log.warn("Rejected JWT: token expired");
+            org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+            log.warn("JWT_EXPIRED reasonCode=TOKEN_EXPIRED statusCode=401");
             return false;
         }
 
@@ -164,7 +167,8 @@ public boolean validateJwtToken(String authToken) {
         Date notBefore = signedJWT.getJWTClaimsSet().getNotBeforeTime();
 
         if (notBefore != null && now.before(notBefore)) {
-            log.warn("Rejected JWT: token not yet valid");
+            org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+            log.warn("JWT_INVALID reasonCode=TOKEN_NOT_YET_VALID statusCode=401");
             return false;
         }
 
@@ -172,15 +176,18 @@ public boolean validateJwtToken(String authToken) {
         return true;
 
     } catch (ParseException e) {
-        log.warn("Rejected JWT: invalid token format or claims");
+        org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+        log.warn("JWT_INVALID reasonCode=MALFORMED_TOKEN statusCode=401");
         return false;
 
     } catch (JOSEException e) {
-        log.error("JWT signature verification failed", e);
+        org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+        log.warn("JWT_INVALID reasonCode=VERIFICATION_ERROR statusCode=401");
         return false;
 
     } catch (IllegalArgumentException e) {
-        log.warn("Rejected JWT: invalid token");
+        org.slf4j.MDC.put("jwtSecurityEventLogged", "true");
+        log.warn("JWT_INVALID reasonCode=INVALID_TOKEN statusCode=401");
         return false;
     }
 }

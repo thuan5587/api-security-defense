@@ -180,7 +180,7 @@ public VehicleLocationResponse getVehicleLocation(
         User currentUser = userService.getUserFromToken(request);
 
         if (currentUser == null) {
-            log.warn("BOLA_ACCESS_DENIED: unauthenticated request");
+            log.warn("BOLA_ACCESS_DENIED eventType=UNAUTHENTICATED_ACCESS resourceId={} principalId=N/A reasonCode=UNAUTHENTICATED", carId);
             return null;
         }
 
@@ -198,7 +198,7 @@ public VehicleLocationResponse getVehicleLocation(
         vehicleDetails.getOwner().getId())) {
 
     log.warn(
-        "BOLA_ACCESS_DENIED event=OBJECT_OWNERSHIP_DENIED method={} resourceId={} principalId={} reason=NOT_OWNER",
+        "BOLA_ACCESS_DENIED eventType=OBJECT_OWNERSHIP_DENIED method={} resourceId={} principalId={} reasonCode=NOT_OWNER statusCode=404",
         request.getMethod(),
         carId,
         currentUser.getId()

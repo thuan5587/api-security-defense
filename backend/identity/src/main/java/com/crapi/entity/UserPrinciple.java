@@ -103,6 +103,10 @@ public class UserPrinciple implements UserDetails {
     return true;
   }
 
+  public Long getId() {
+    return id;
+  }
+
   public ERole getRole() {
     return role;
   }

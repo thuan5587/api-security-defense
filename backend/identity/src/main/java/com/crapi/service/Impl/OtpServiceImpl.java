@@ -1,12 +1,12 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the “License”);
+ * Licensed under the Apache License, Version 2.0 (the â€œLicenseâ€);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an “AS IS” BASIS,
+ * distributed under the License is distributed on an â€œAS ISâ€ BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -88,12 +88,14 @@ private static final int OTP_LOCK_MINUTES = 10;
     User user = userRepository.findByEmail(otpForm.getEmail());
 
     if (user == null) {
+      log.warn("OTP_INVALID reasonCode=USER_NOT_FOUND statusCode=401 principalId=N/A");
       return new CRAPIResponse("Invalid OTP or email.", 401);
     }
 
     Otp otp = otpRepository.findByUserForUpdate(user);
 
     if (otp == null) {
+      log.warn("OTP_INVALID reasonCode=OTP_NOT_FOUND statusCode=401 principalId={}", user.getId());
       return new CRAPIResponse("Invalid OTP or email.", 401);
     }
 
@@ -103,7 +105,7 @@ private static final int OTP_LOCK_MINUTES = 10;
     if (otp.getLockedUntil() != null
         && now.isBefore(otp.getLockedUntil())) {
 
-      log.warn("OTP_RATE_LIMITED: userId={}", user.getId());
+      log.warn("OTP_RATE_LIMITED reasonCode=ACCOUNT_LOCKED statusCode=429 principalId={}", user.getId());
 
       return new CRAPIResponse(
           "Too many OTP attempts. Please try again later.", 429);
@@ -114,6 +116,7 @@ private static final int OTP_LOCK_MINUTES = 10;
         || otp.getExpiresAt() == null
         || !now.isBefore(otp.getExpiresAt())) {
 
+      log.warn("OTP_INVALID reasonCode=OTP_EXPIRED_OR_INACTIVE statusCode=401 principalId={}", user.getId());
       return new CRAPIResponse("Invalid or expired OTP.", 401);
     }
 
@@ -134,6 +137,7 @@ private static final int OTP_LOCK_MINUTES = 10;
       otp.setStatus(EStatus.INACTIVE.toString());
       otpRepository.save(otp);
 
+      log.warn("OTP_RATE_LIMITED reasonCode=ATTEMPT_LIMIT_ALREADY_EXCEEDED statusCode=429 principalId={}", user.getId());
       return new CRAPIResponse("OTP attempt limit exceeded.", 429);
     }
 
@@ -154,16 +158,13 @@ private static final int OTP_LOCK_MINUTES = 10;
       otp.setCount(attempts);
       otp.setLastFailedAt(now);
 
-      log.warn(
-          "OTP_INVALID: userId={}, failedAttempts={}",
-          user.getId(), attempts);
 
       if (attempts >= MAX_OTP_ATTEMPTS) {
         otp.setLockedUntil(now.plusMinutes(OTP_LOCK_MINUTES));
         otp.setStatus(EStatus.INACTIVE.toString());
 
         log.warn(
-            "OTP_RATE_LIMITED: userId={}, failedAttempts={}",
+            "OTP_RATE_LIMITED reasonCode=MAX_ATTEMPTS_EXCEEDED statusCode=429 principalId={} failedAttempts={}",
             user.getId(), attempts);
 
         otpRepository.save(otp);
@@ -173,6 +174,7 @@ private static final int OTP_LOCK_MINUTES = 10;
       }
 
       otpRepository.save(otp);
+      log.warn("OTP_INVALID reasonCode=INCORRECT_OTP statusCode=401 principalId={} failedAttempts={}", user.getId(), attempts);
       return new CRAPIResponse("Invalid OTP.", 401);
     }
 
@@ -216,7 +218,7 @@ public CRAPIResponse generateOtp(ForgetPassword forgetPassword) {
                 && now.isBefore(existingOtp.getLockedUntil())) {
 
             log.warn(
-                "OTP_RATE_LIMITED: OTP generation blocked for userId={}",
+                "OTP_RATE_LIMITED reasonCode=GENERATION_BLOCKED_ACCOUNT_LOCKED statusCode=429 principalId={}",
                 user.getId()
             );
 

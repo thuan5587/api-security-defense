@@ -1,11 +1,11 @@
 
 <configuration monitorInterval="60">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{35} - %msg%n
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level %logger{35} requestId=%X{requestId:-N/A} endpoint=%X{endpoint:-N/A} method=%X{method:-N/A} principalId=%X{principalId:-N/A} clientIp=%X{clientIp:-N/A} - %msg%n
             </Pattern>
-        </layout>
+        </encoder>
     </appender>
 
     <logger name="com.crapi" level="info" additivity="false">

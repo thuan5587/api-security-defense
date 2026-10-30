@@ -85,6 +85,9 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
                     userDetails, null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (userDetails instanceof com.crapi.entity.UserPrinciple) {
+              org.slf4j.MDC.put("principalId", String.valueOf(((com.crapi.entity.UserPrinciple) userDetails).getId()));
+            }
           } else {
             log.error(UserMessage.ACCOUNT_LOCKED_MESSAGE);
             response.sendError(
@@ -155,6 +158,9 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
           new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
       authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authToken);
+      if (userDetails instanceof com.crapi.entity.UserPrinciple) {
+        org.slf4j.MDC.put("principalId", String.valueOf(((com.crapi.entity.UserPrinciple) userDetails).getId()));
+      }
 
       log.debug("Basic Auth authentication successful");
 
@@ -214,7 +220,6 @@ public String getUserFromToken(HttpServletRequest request) throws ParseException
 
     // Both JWT and API Key must have a valid RS256 signature.
     if (!tokenProvider.validateJwtToken(token)) {
-        log.warn("Rejected invalid JWT or API Key");
         return EStatus.INVALID.toString();
     }
 
