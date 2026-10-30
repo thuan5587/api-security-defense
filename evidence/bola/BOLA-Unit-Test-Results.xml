@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.crapi.service.Impl.VehicleServiceImplTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-10-22T22:50:37" hostname="LAPTOP-LJUH588I" time="1.344">
+  <properties/>
+  <testcase name="getVehicleLocationNotFoundWhenVehicleDetailsOwnerIsNull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="1.208"/>
+  <testcase name="addVehicleDetailsFailWhenVehicleDetailsNotPresent" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.019"/>
+  <testcase name="getVehicleLocationDeniedWhenUserIsNotOwner" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.022"/>
+  <testcase name="checkVehicleFailWhenVehicleDetailsNotFound" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.025"/>
+  <testcase name="getVehicleLocationSuccessWithUserDetailsNull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.008"/>
+  <testcase name="getVehicleLocationSuccessWithUserDetailsNotNull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.004"/>
+  <testcase name="getVehicleDetailsReturnWhenUserNotFound" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.004"/>
+  <testcase name="addVehicleFailWhenUserNotPresent" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.004"/>
+  <testcase name="sendVehicleDetailsSuccessFullWithOwnerNull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.016"/>
+  <testcase name="addVehicleDetailsSuccess" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.01"/>
+  <testcase name="addVehicleDetailsFailWhenVehicleFormPinCodeNotEqualVehicleDetailPinCode" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.003"/>
+  <testcase name="checkVehicleFailWhenPinCodeNotEqual" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.004"/>
+  <testcase name="checkVehicleSuccessFull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.003"/>
+  <testcase name="getVehicleDetailsSuccessFull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.003"/>
+  <testcase name="getVehicleLocationNotFoundWhenVehicleDetailsAreNull" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.002"/>
+  <testcase name="checkVehicleFailWhenUserNotFound" classname="com.crapi.service.Impl.VehicleServiceImplTest" time="0.003"/>
+  <system-out><![CDATA[05:50:38,033 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.4.14
+05:50:38,040 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Here is a list of configurators discovered as a service, by rank: 
+05:50:38,040 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 -   org.springframework.boot.logging.logback.RootLogLevelConfigurator
+05:50:38,040 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - They will be invoked in order until ExecutionStatus.DO_NOT_INVOKE_NEXT_IF_ANY is returned.
+05:50:38,040 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Constructed configurator of type class org.springframework.boot.logging.logback.RootLogLevelConfigurator
+05:50:38,056 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - org.springframework.boot.logging.logback.RootLogLevelConfigurator.configure() call lasted 0 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+05:50:38,056 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+05:50:38,057 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+05:50:38,061 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+05:50:38,061 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+05:50:38,061 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 4 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+05:50:38,061 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+05:50:38,062 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+05:50:38,062 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+05:50:38,067 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/D:/api-security-defense/backend/identity/build/resources/main/logback.xml]
+05:50:38,236 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+05:50:38,236 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+05:50:38,289 |-WARN in ch.qos.logback.core.ConsoleAppender[CONSOLE] - This appender no longer admits a layout as a sub-component, set an encoder instead.
+05:50:38,289 |-WARN in ch.qos.logback.core.ConsoleAppender[CONSOLE] - To ensure compatibility, wrapping your layout in LayoutWrappingEncoder.
+05:50:38,289 |-WARN in ch.qos.logback.core.ConsoleAppender[CONSOLE] - See also http://logback.qos.ch/codes.html#layoutInsteadOfEncoder for details
+05:50:38,289 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.crapi] to INFO
+05:50:38,289 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [com.crapi] to false
+05:50:38,289 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[com.crapi]
+05:50:38,289 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to ERROR
+05:50:38,289 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+05:50:38,289 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@26844abb - End of configuration.
+05:50:38,289 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@1a865273 - Registering current configuration as safe fallback point
+05:50:38,289 |-INFO in ch.qos.logback.classic.util.ContextInitializer@312b34e3 - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 227 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2026-10-23 05:50:38 [Test worker] WARN c.c.service.Impl.VehicleServiceImpl - BOLA_ACCESS_DENIED event=OBJECT_OWNERSHIP_DENIED method= resourceId=e310e3e8-e02a-4610-9432-e13791c71289 principalId=100 reason=NOT_OWNER
+2026-10-23 05:50:38 [Test worker] INFO c.c.service.Impl.VehicleServiceImpl - Success Owner updated in vehicle details
+2026-10-23 05:50:38 [Test worker] INFO c.c.service.Impl.VehicleServiceImpl - Success Owner updated in vehicle details
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

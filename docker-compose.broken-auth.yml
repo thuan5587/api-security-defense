@@ -1,0 +1,3 @@
+﻿services:
+  crapi-identity:
+    image: crapi-identity-broken-auth-defense:v1

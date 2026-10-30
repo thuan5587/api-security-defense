@@ -1,0 +1,265 @@
+﻿{
+    "item":  [
+                 {
+                     "name":  "02 - BOLA",
+                     "item":  [
+                                  {
+                                      "name":  "Get Alice Vehicles",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/vehicles",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "vehicles"
+                                                                           ]
+                                                              },
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_alice}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Bob Vehicles",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/vehicles",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "vehicles"
+                                                                           ]
+                                                              },
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_bob}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "BOLA-02 - Alice Access Bob Vehicle",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/vehicle/b6ab7600-594f-4104-9ce8-d370a46e8ecc/location",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "vehicle",
+                                                                               "b6ab7600-594f-4104-9ce8-d370a46e8ecc",
+                                                                               "location"
+                                                                           ]
+                                                              },
+                                                      "description":  "Expected after BOLA patch: HTTP 404 when Alice accesses Bob\u0027s vehicle location.",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{token_alice}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "03 - JWT Authentication",
+                     "item":  [
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/user/dashboard",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "user",
+                                                                               "dashboard"
+                                                                           ]
+                                                              },
+                                                      "description":  "After Defense: Missing JWT must return HTTP 401.",
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               }
+                                                  },
+                                      "name":  "JWT-01 - Missing Token",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Missing JWT returns 401\", function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/user/dashboard",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "user",
+                                                                               "dashboard"
+                                                                           ]
+                                                              },
+                                                      "description":  "After Defense: Malformed JWT must return HTTP 401.",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "invalid.jwt.token"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  },
+                                      "name":  "JWT-02 - Invalid Token",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Invalid JWT returns 401\", function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/user/dashboard",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "user",
+                                                                               "dashboard"
+                                                                           ]
+                                                              },
+                                                      "description":  "After Defense: Expired JWT must return HTTP 401 and generate JWT_EXPIRED security log.",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{expired_token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  },
+                                      "name":  "JWT-03 - Expired Token",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Expired JWT returns 401\", function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "host":  [
+                                                                               "{{base_url}}"
+                                                                           ],
+                                                                  "raw":  "{{base_url}}/identity/api/v2/user/dashboard",
+                                                                  "path":  [
+                                                                               "identity",
+                                                                               "api",
+                                                                               "v2",
+                                                                               "user",
+                                                                               "dashboard"
+                                                                           ]
+                                                              },
+                                                      "description":  "After Defense: Valid JWT must return HTTP 200.",
+                                                      "auth":  {
+                                                                   "bearer":  [
+                                                                                  {
+                                                                                      "key":  "token",
+                                                                                      "type":  "string",
+                                                                                      "value":  "{{valid_token}}"
+                                                                                  }
+                                                                              ],
+                                                                   "type":  "bearer"
+                                                               }
+                                                  },
+                                      "name":  "JWT-04 - Valid Token",
+                                      "event":  [
+                                                    {
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"Valid JWT returns 200\", function () { pm.response.to.have.status(200); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   },
+                                                        "listen":  "test"
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ],
+    "info":  {
+                 "description":  "BOLA defense testing for OWASP crAPI. Sanitized collection without real JWT tokens.",
+                 "name":  "API Security E2 - After Defense",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             }
+}

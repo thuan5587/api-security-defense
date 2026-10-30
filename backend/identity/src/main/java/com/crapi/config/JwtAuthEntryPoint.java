@@ -40,6 +40,9 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
       HttpServletResponse response,
       AuthenticationException authenticationException)
       throws IOException, ServletException, LockedException {
+    if (!"true".equals(org.slf4j.MDC.get("jwtSecurityEventLogged"))) {
+      org.slf4j.LoggerFactory.getLogger(JwtAuthEntryPoint.class).warn("AUTHENTICATION_REQUIRED eventType=AUTHENTICATION_REQUIRED reasonCode=MISSING_OR_INVALID_CREDENTIALS statusCode=401");
+    }
     CRAPIResponse crapiResponse = new CRAPIResponse();
     crapiResponse.setMessage("Invalid Token");
     crapiResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

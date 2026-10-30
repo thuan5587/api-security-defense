@@ -34,3 +34,25 @@ Thumbs.db
 /backend/identity/src/main/resources/certs/keystore.sh
 
 /evidence/bola/
+
+# Local backups and Postman secrets
+*.bak
+*.bak-*
+/postman/crAPI-After-Defense.postman_environment.json
+
+# Local backups and Postman secrets
+*.bak
+*.bak-*
+/postman/crAPI-After-Defense.postman_environment.json
+
+# Allow selected BOLA evidence
+!/evidence/bola/
+/evidence/bola/*
+!/evidence/bola/BOLA-02-Before-Patch.png
+!/evidence/bola/BOLA-02-After-Patch.png
+!/evidence/bola/BOLA-Access-Denied-Log.txt
+!/evidence/bola/BOLA-Unit-Test-Results.xml
+
+# Generated JWT test artifacts
+/backend/identity/jwt-test-tools/*.class
+/backend/identity/jwt-test-tools/*-token.txt

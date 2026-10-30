@@ -1,0 +1,1 @@
+2026-10-22 21:32:28 [https-jsse-nio-8080-exec-8] WARN c.c.service.Impl.VehicleServiceImpl - BOLA_ACCESS_DENIED event=OBJECT_OWNERSHIP_DENIED method=GET resourceId=b6ab7600-594f-4104-9ce8-d370a46e8ecc principalId=9 reason=NOT_OWNER

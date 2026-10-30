@@ -1,12 +1,12 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the “License”);
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an “AS IS” BASIS,
+ * distributed under the License is distributed on an â€œAS ISâ€ BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -16,6 +16,7 @@ package com.crapi.config;
 
 import com.crapi.service.Impl.UserDetailsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -41,6 +42,13 @@ public class WebSecurityConfig {
   @Autowired UserDetailsServiceImpl userDetailsService;
 
   @Autowired JwtAuthEntryPoint jwtUnauthorizedHandler;
+
+  @Bean
+  public FilterRegistrationBean<JwtAuthTokenFilter> jwtFilterRegistration(JwtAuthTokenFilter filter) {
+    FilterRegistrationBean<JwtAuthTokenFilter> registration = new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+    return registration;
+  }
 
   @Bean
   public JwtAuthTokenFilter authenticationJwtTokenFilter() {
@@ -90,7 +98,8 @@ public class WebSecurityConfig {
                     .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())
-        .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(new SecurityRequestContextFilter(), UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(authenticationJwtTokenFilter(), SecurityRequestContextFilter.class)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(handling -> handling.authenticationEntryPoint(jwtUnauthorizedHandler));
@@ -100,3 +109,4 @@ public class WebSecurityConfig {
     return http.build();
   }
 }
+
